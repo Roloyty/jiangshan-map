@@ -2521,7 +2521,7 @@
     // ---------------- Chronicle Sidebar ----------------
     _syncDocumentSeoMeta() {
       if (typeof document === 'undefined') return;
-      const baseSiteUrl = 'https://deanchen.me/jiangshan-map/';
+      const baseSiteUrl = HistoricalAtlasController.SITE_BASE_URL;
       const isEn = this.locale === 'en';
       const cur = this.dynasties && this.dynasties[this.dynastyIdx];
       let pageTitle = isEn
@@ -2594,7 +2594,7 @@
         'aria-label',
         'Historical Dynasties, Person Chronicles & Strategic Passes Directory'
       );
-      const baseSiteUrl = 'https://deanchen.me/jiangshan-map/';
+      const baseSiteUrl = HistoricalAtlasController.SITE_BASE_URL;
       const dynItems = (this.dynasties || [])
         .map((d) => {
           const dName = this.dynastyName(d);
@@ -6585,6 +6585,15 @@
         nextBtn.onclick = null;
         this.startChallenge();
       };
+    }
+
+    // Canonical / og:url / directory links follow the host actually serving the page,
+    // so mirrors (e.g. weiwuming.cn/atlas/) do not send visitors back to the origin site.
+    static get SITE_BASE_URL() {
+      if (typeof location !== 'undefined' && /^https?:$/.test(location.protocol)) {
+        return `${location.origin}${location.pathname.replace(/[^/]*$/, '')}`;
+      }
+      return 'https://deanchen.me/jiangshan-map/';
     }
 
     // ---------------- Historical Journeys (青史行迹) ----------------
