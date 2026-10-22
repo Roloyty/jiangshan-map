@@ -66,6 +66,7 @@ function loadAtlasRuntime() {
     'atlas_snapshots.js',
     'map_data.js',
     'lore_data.js',
+    'wwm_data.js',
     'i18n_dict.js',
     'app.js',
   ]) {
@@ -650,8 +651,6 @@ ${JSON.stringify(jsonLdObj, null, 2)}
       text-decoration: none;
     }
   </style>
-  <script defer src="https://events.vercount.one/js"></script>
-  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "dc645937f75341b2a7416bd1fb81b635"}'></script>
 </head>`;
 }
 

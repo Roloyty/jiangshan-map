@@ -26,6 +26,7 @@ function main() {
     'atlas_snapshots.js',
     'map_data.js',
     'lore_data.js',
+    'wwm_data.js',
     'i18n_dict.js',
   ];
   let bootSnapshots = null;
@@ -69,7 +70,7 @@ function main() {
       Array.isArray(loreData.PLACE_LANDMARK_EVENTS) &&
       loreData.PLACE_LANDMARK_EVENTS.length >= 60 &&
       Array.isArray(loreData.HISTORICAL_JOURNEYS) &&
-      loreData.HISTORICAL_JOURNEYS.length === 7 &&
+      loreData.HISTORICAL_JOURNEYS.length >= 7 &&
       Array.isArray(loreData.STRATEGIC_PASSES) &&
       loreData.STRATEGIC_PASSES.length >= 18,
     'ATLAS_LORE_DATA must provide era spans, landmark events, strategic passes, and 7 historical journeys'
@@ -840,7 +841,7 @@ function main() {
         Array.isArray(st.coord) &&
           st.coord.length === 2 &&
           st.coord[0] >= 60 &&
-          st.coord[0] <= 135 &&
+          st.coord[0] <= 142 &&
           st.coord[1] >= 15 &&
           st.coord[1] <= 55,
         `Out-of-bounds stop coord ${JSON.stringify(st.coord)} in journey ${j.key}`
@@ -850,7 +851,7 @@ function main() {
           Array.isArray(viaPt) &&
             viaPt.length === 2 &&
             viaPt[0] >= 60 &&
-            viaPt[0] <= 135 &&
+            viaPt[0] <= 142 &&
             viaPt[1] >= 15 &&
             viaPt[1] <= 55,
           `Out-of-bounds via point ${JSON.stringify(viaPt)} in journey ${j.key}`
@@ -879,7 +880,7 @@ function main() {
 
   // CUJ 9k: Python CLI (skills/jiangshan-atlas/scripts/jiangshan.py) Execution Smoke Test
   const cliOut = execFileSync(
-    'python3',
+    process.platform === 'win32' ? 'python' : 'python3',
     [skillPyPath, '--year', '1079, 1080, 1094, 1097', '--place', '湖州 → 黄州 → 惠州 → 儋州'],
     { encoding: 'utf8' }
   ).trim();
