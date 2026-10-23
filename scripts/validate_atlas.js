@@ -27,6 +27,10 @@ function main() {
     'map_data.js',
     'lore_data.js',
     'wwm_data.js',
+    'wwm_korea.js',
+    'wwm_japan.js',
+    'wwm_taiwan.js',
+    'wwm_eastasia.js',
     'i18n_dict.js',
   ];
   let bootSnapshots = null;
@@ -56,6 +60,7 @@ function main() {
   // Verify controller syntax
   const appCode = fs.readFileSync(path.join(JS_DIR, 'app.js'), 'utf8');
   new vm.Script(appCode, { filename: 'app.js' });
+  new vm.Script(fs.readFileSync(path.join(JS_DIR, 'wwm_ext.js'), 'utf8'), { filename: 'wwm_ext.js' });
 
   const provinces = sandbox.window.PROVINCE_OUTLINES;
   const snapshots = sandbox.window.ATLAS_SNAPSHOTS;
@@ -867,8 +872,8 @@ function main() {
         'titleEn',
         'descZh',
         'descEn',
-        'quoteZh',
-        'quoteEn',
+        // 谓无名扩展行迹（source: 'wwm'）允许各站不带引文
+        ...(j.source === 'wwm' ? [] : ['quoteZh', 'quoteEn']),
       ]) {
         assert(
           typeof st[reqField] === 'string' && st[reqField].trim().length > 0,
