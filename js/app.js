@@ -3807,6 +3807,7 @@
           if (isCloseCoord(st.coord, 45) && !results.some((r) => r.year === st.year)) {
             results.push({
               year: st.year,
+              personStop: true,
               text:
                 this.locale === 'en'
                   ? `${st.ancientEn} — ${st.titleEn}`
@@ -3831,8 +3832,9 @@
           : (lm.year >= d.fromYear && lm.year <= d.toYear);
         if (!dynMatch) continue;
         if (isCloseCoord(lm.coord, 45)) {
+          // 人物行迹站点不吞地标：行迹越加越多，不能把「红楼梦」这类定点史事挤掉
           const dup = results.some((r) =>
-            r.fromLandmark ? r.year === lm.year : Math.abs(r.year - lm.year) <= 3
+            r.fromLandmark ? r.year === lm.year : !r.personStop && Math.abs(r.year - lm.year) <= 3
           );
           if (!dup) {
             results.push({
