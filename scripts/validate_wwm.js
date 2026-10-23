@@ -218,6 +218,14 @@ const PEOPLE_KEYS = [
   'jiangweishui',
   'hongdaeyong',
   'hexiangning',
+  'chenduxiu',
+  'lidazhao',
+  'zhangwojun',
+  'pakjega',
+  'lideokmu',
+  'naitokonan',
+  'anchangho',
+  'ozakihotsumi',
 ];
 
 test('wwm people journeys are complete, ascending and in bounds', () => {
