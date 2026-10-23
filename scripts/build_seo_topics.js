@@ -67,6 +67,7 @@ function loadAtlasRuntime() {
     'map_data.js',
     'lore_data.js',
     'wwm_data.js',
+    'wwm_people.js',
     'i18n_dict.js',
     'app.js',
   ]) {

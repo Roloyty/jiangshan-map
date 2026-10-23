@@ -20,8 +20,18 @@ function load(files) {
   return sandbox.window;
 }
 
-const win = load(['map_data.js', 'wwm_korea.js', 'wwm_japan.js', 'wwm_taiwan.js', 'wwm_ext.js']);
-const { WWM, WWM_EXT, DYNASTY_DATA } = win;
+const win = load([
+  'map_data.js',
+  'lore_data.js',
+  'wwm_data.js',
+  'wwm_people.js',
+  'wwm_korea.js',
+  'wwm_japan.js',
+  'wwm_taiwan.js',
+  'wwm_eastasia.js',
+  'wwm_ext.js',
+]);
+const { WWM, WWM_EXT, DYNASTY_DATA, ATLAS_LORE_DATA: LORE } = win;
 
 function pointInRing(x, y, ring) {
   let inside = false;
@@ -181,4 +191,60 @@ test('layers attach only to phases mostly inside their years, without mutating s
   expect(['台北州', '澎湖厅'], 2, ['s_roc_w4', 's_roc_a', 's_roc'], ['s_roc_w2', 's_roc_w3', 's_roc_c', 's_qing_g']);
   expect(['东京府', '冲绳县'], 2, ['s_qing_f', 's_qing_g', 's_roc_a0', 's_roc'], ['s_qing_f0', 's_roc_c', 's_roc_d']);
   assert.equal(shared.length, 1);
+});
+
+const PEOPLE_KEYS = [
+  'luxun',
+  'sunzhongshan',
+  'zhouenlai',
+  'takeuchiyoshimi',
+  'uchiyamakanzo',
+  'kimgu',
+  'anjunggeun',
+  'lianyheng',
+];
+
+test('wwm people journeys are complete, ascending and in bounds', () => {
+  assert.ok(LORE, 'ATLAS_LORE_DATA loaded');
+  const wwm = LORE.HISTORICAL_JOURNEYS.filter((j) => j.source === 'wwm');
+  assert.deepEqual(
+    Array.from(wwm, (j) => j.key),
+    ['liangqichao', 'bakjiwon', 'jianzhen', ...PEOPLE_KEYS]
+  );
+  for (const key of PEOPLE_KEYS) {
+    const j = wwm.find((x) => x.key === key);
+    assert.ok(j.dynastyKey === 'qing' || j.dynastyKey === 'roc', `${key} dynastyKey`);
+    assert.ok(j.stops.length >= 8, `${key} stops >= 8`);
+    let last = -Infinity;
+    for (const st of j.stops) {
+      assert.ok(
+        typeof st.year === 'number' && st.year >= -403 && st.year <= 2026 && st.year !== 0,
+        `${key} stop year ${st.year}`
+      );
+      assert.ok(st.year >= last, `${key} stops must not go back in time`);
+      last = st.year;
+      assert.ok(
+        st.coord[0] >= 60 && st.coord[0] <= 142 && st.coord[1] >= 15 && st.coord[1] <= 55,
+        `${key} ${st.ancientZh} coord ${st.coord}`
+      );
+      for (const v of st.via || []) {
+        assert.ok(v[0] >= 60 && v[0] <= 142 && v[1] >= 15 && v[1] <= 55, `${key} via ${v}`);
+      }
+      for (const f of ['eraZh', 'ancientZh', 'modernZh', 'ancientEn', 'modernEn', 'titleZh', 'titleEn', 'descZh', 'descEn']) {
+        assert.ok(typeof st[f] === 'string' && st[f].trim().length > 0, `${key} ${st.ancientZh || st.year} field ${f}`);
+      }
+    }
+  }
+});
+
+test('every wwm person profile resolves to its journey and covers its span', () => {
+  for (const key of PEOPLE_KEYS) {
+    const p = LORE.PERSON_PROFILES.find((x) => x.key === key);
+    assert.ok(p, `profile ${key}`);
+    const j = LORE.HISTORICAL_JOURNEYS.find((x) => x.key === p.journeyKey);
+    assert.ok(j, `${key} journeyKey resolves`);
+    assert.ok(p.span[0] <= j.stops[0].year, `${key} span starts before first stop`);
+    assert.ok(p.span[1] >= j.stops[j.stops.length - 1].year, `${key} span ends after last stop`);
+    assert.ok(p.aliases.length >= 2 && p.tokens.length >= 1, `${key} search aliases`);
+  }
 });

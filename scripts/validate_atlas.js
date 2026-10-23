@@ -27,6 +27,7 @@ function main() {
     'map_data.js',
     'lore_data.js',
     'wwm_data.js',
+    'wwm_people.js',
     'wwm_korea.js',
     'wwm_japan.js',
     'wwm_taiwan.js',
