@@ -242,6 +242,22 @@ const PEOPLE_KEYS = [
   'caiyuanpei',
   'hushi',
   'chenyinke',
+  'lishutong',
+  'sumanshu',
+  'tianhan',
+  'maodun',
+  'linyutang',
+  'bingxin',
+  'xuzhimo',
+  'laoshe',
+  'kuwabarajitsuzo',
+  'shiratorikurakichi',
+  'kanonaoki',
+  'aokimasaru',
+  'yoshikawakojiro',
+  'kuraishitakeshiro',
+  'satoharuo',
+  'masudawataru',
 ];
 
 test('wwm people journeys are complete, ascending and in bounds', () => {
