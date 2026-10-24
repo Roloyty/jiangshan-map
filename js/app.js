@@ -83,7 +83,12 @@
       for (let i = 0; i < n; i++) {
         pts[i] = this.toScreen(ring[i][0], ring[i][1]);
       }
+      return this.smoothPointsToPath(pts);
+    }
 
+    /** 闭合折线（屏幕坐标，首尾不重复）转带圆角过渡的 SVG 路径，中原王朝边疆线与邻国轮廓共用 */
+    smoothPointsToPath(pts) {
+      const n = pts.length;
       const sx = new Float64Array(n);
       const sy = new Float64Array(n);
       const ex = new Float64Array(n);
@@ -128,6 +133,47 @@
       return out + 'Z';
     }
 
+    /**
+     * 邻国政权轮廓：不少政权原图顶点稀疏（游牧政权常只有一二十个顶点），直接描线棱角分明。
+     * 按平均边长自适应做 Chaikin 切角细分（每轮把角点替换为相邻两边 1/4、3/4 处的两点，
+     * 轮廓始终落在原多边形内），再走与边疆线相同的圆角描线，使邻国边缘与中原王朝边界一样平滑连续。
+     */
+    neighborRingToSvgPath(ring) {
+      if (!ring || ring.length < 3) return '';
+      let n = ring.length;
+      if (
+        n > 3 &&
+        Math.abs(ring[0][0] - ring[n - 1][0]) < 1e-6 &&
+        Math.abs(ring[0][1] - ring[n - 1][1]) < 1e-6
+      ) {
+        n--;
+      }
+      if (n < 3) return this.ringToSvgPath(ring);
+
+      let pts = new Array(n);
+      for (let i = 0; i < n; i++) {
+        pts[i] = this.toScreen(ring[i][0], ring[i][1]);
+      }
+      for (let iter = 0; iter < 3 && pts.length < 2400; iter++) {
+        let total = 0;
+        for (let i = 0; i < pts.length; i++) {
+          const p0 = pts[i];
+          const p1 = pts[(i + 1) % pts.length];
+          total += Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+        }
+        if (total / pts.length <= 14) break;
+        const next = new Array(pts.length * 2);
+        for (let i = 0; i < pts.length; i++) {
+          const p0 = pts[i];
+          const p1 = pts[(i + 1) % pts.length];
+          next[i * 2] = [p0[0] * 0.75 + p1[0] * 0.25, p0[1] * 0.75 + p1[1] * 0.25];
+          next[i * 2 + 1] = [p0[0] * 0.25 + p1[0] * 0.75, p0[1] * 0.25 + p1[1] * 0.75];
+        }
+        pts = next;
+      }
+      return this.smoothPointsToPath(pts);
+    }
+
     _orientRing(ring, isHole = false) {
       if (!ring || ring.length < 3) return ring;
       let area2 = 0;
@@ -165,6 +211,25 @@
         d = shapeObj.coordinates.map((poly) => poly.map((r, idx) => fn(r, idx)).join('')).join('');
       }
       Object.defineProperty(shapeObj, cacheKey, {
+        value: d,
+        writable: true,
+        enumerable: false,
+        configurable: true,
+      });
+      return d;
+    }
+
+    neighborShapeToSvgPath(shapeObj) {
+      if (!shapeObj) return '';
+      if (shapeObj._svgPathNeighborSmooth !== undefined) return shapeObj._svgPathNeighborSmooth;
+      const fn = (r, idx) => this.neighborRingToSvgPath(this._orientRing(r, idx > 0));
+      let d = '';
+      if (shapeObj.type === 'Polygon') {
+        d = shapeObj.coordinates.map((r, idx) => fn(r, idx)).join('');
+      } else if (shapeObj.type === 'MultiPolygon') {
+        d = shapeObj.coordinates.map((poly) => poly.map((r, idx) => fn(r, idx)).join('')).join('');
+      }
+      Object.defineProperty(shapeObj, '_svgPathNeighborSmooth', {
         value: d,
         writable: true,
         enumerable: false,
@@ -1412,7 +1477,9 @@
       for (const pol of sorted) {
         const isN = pol.role === 'neighbor';
         const attrs = {
-          d: this.projector.shapeToSvgPath(pol.shape),
+          d: isN
+            ? this.projector.neighborShapeToSvgPath(pol.shape)
+            : this.projector.shapeToSvgPath(pol.shape),
           class: `polity-shape ${pol.role}`,
         };
         if (!isN) {
@@ -2450,8 +2517,7 @@
             : '悬停高亮周边政权 · 点击复位全图';
         const sw = document.createElement('i');
         sw.className = 'swatch';
-        sw.style.color = '#6e6256';
-        sw.style.borderStyle = 'dashed';
+        sw.style.color = '#5f5344';
         sw.style.background = 'rgba(138, 124, 107, 0.22)';
         entry.appendChild(sw);
         entry.appendChild(

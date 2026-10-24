@@ -706,9 +706,8 @@ h2 {
 .polity-shape.neighbor {
   fill: rgba(138, 124, 107, 0.14);
   fill-opacity: 1;
-  stroke: #6e6256;
-  stroke-dasharray: 3 3;
-  stroke-width: 1.05;
+  stroke: #5f5344;
+  stroke-width: 1.5;
 }
 
 #atlas-svg.terrain-active .polity-shape.neighbor {
@@ -3954,8 +3953,7 @@ html[lang="en"] #act-toggle-pane .tp-label {
 
   .polity-shape.neighbor,
   #atlas-svg.terrain-active .polity-shape.neighbor {
-    stroke-width: 0.68;
-    stroke-dasharray: 2.5 2.5;
+    stroke-width: 1;
     fill: rgba(138, 124, 107, 0.1);
     fill-opacity: 1;
   }
